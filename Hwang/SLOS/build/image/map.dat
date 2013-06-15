@@ -1,0 +1,631 @@
+
+Allocating common symbols
+Common symbol       size              file
+
+oled                0x4               task2_start.o
+ledUID              0x4               button_service.o
+pcb_exist           0xc               cinit.o
+host                0x4               cli_serial.o
+gpbuff              0x100             cli_com.o
+report_buff         0x4               cli_com.o
+red_host            0x4               task1_start.o
+node                0x10              serial_driver.o
+display             0x8               segment_driver.o
+stack               0x4               task1_start.o
+rs                  0x10              swiapi.o
+led                 0x1               task2_start.o
+serial              0x4               cli_serial.o
+rled                0x4               task1_start.o
+STATE               0x4               cinit.o
+countdown           0x4               tick_service.o
+command_line        0x100             cli_com.o
+task                0x4               task1_start.o
+orange_host         0x4               task2_start.o
+task_to_pcb         0x10              cinit.o
+running_task        0x10              cinit.o
+pcb                 0x4               task1_start.o
+diodes              0x8               led_driver.o
+error_buff          0x4               cli_com.o
+ledNode             0x4               button_service.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+SRAM             0xa00c0000         0xa1680000
+
+Linker script and memory map
+
+LOAD linker.dat
+LOAD start.o
+LOAD init.o
+LOAD pcb.o
+LOAD swiapi.o
+LOAD undef.o
+LOAD swi.o
+LOAD prefetch.o
+LOAD data.o
+LOAD reserved.o
+LOAD irq.o
+LOAD fiq.o
+LOAD scheduler.o
+LOAD swi_handler.o
+LOAD irq_handler.o
+LOAD bringup.o
+LOAD cpsr.o
+LOAD event_init.o
+LOAD button_service.o
+LOAD tick_service.o
+LOAD ddf_io.o
+LOAD led_driver.o
+LOAD serial_driver.o
+LOAD segment_driver.o
+LOAD mutex.o
+LOAD cinit.o
+LOAD cli_com.o
+LOAD cli_readline.o
+LOAD cli_shell.o
+LOAD cli_serial.o
+LOAD uid.o
+LOAD task1_start.o
+LOAD task2_start.o
+LOAD task3_start.o
+LOAD task4_start.o
+LOAD serial.o
+
+.start          0xa00c0000        0x0
+                0xa00c0000                __start_start = .
+ *(.start)
+                0xa00c0000                __start_end = .
+                0x00008000                . = 0x8000
+
+.interp
+ *(.interp)
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.dyn
+ *(.rel.init)
+ *(.rel.text .rel.text.* .rel.gnu.linkonce.t.*)
+ *(.rel.fini)
+ *(.rel.rodata .rel.rodata.* .rel.gnu.linkonce.r.*)
+ *(.rel.data .rel.data.* .rel.gnu.linkonce.d.*)
+ *(.rel.tdata .rel.tdata.* .rel.gnu.linkonce.td.*)
+ *(.rel.tbss .rel.tbss.* .rel.gnu.linkonce.tb.*)
+ *(.rel.ctors)
+ *(.rel.dtors)
+ *(.rel.got)
+ *(.rel.sdata .rel.sdata.* .rel.gnu.linkonce.s.*)
+ *(.rel.sbss .rel.sbss.* .rel.gnu.linkonce.sb.*)
+ *(.rel.sdata2 .rel.sdata2.* .rel.gnu.linkonce.s2.*)
+ *(.rel.sbss2 .rel.sbss2.* .rel.gnu.linkonce.sb2.*)
+ *(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*)
+
+.rela.dyn
+ *(.rela.init)
+ *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)
+ *(.rela.fini)
+ *(.rela.rodata .rela.rodata.* .rela.gnu.linkonce.r.*)
+ *(.rela.data .rela.data.* .rela.gnu.linkonce.d.*)
+ *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*)
+ *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*)
+ *(.rela.ctors)
+ *(.rela.dtors)
+ *(.rela.got)
+ *(.rela.sdata .rela.sdata.* .rela.gnu.linkonce.s.*)
+ *(.rela.sbss .rela.sbss.* .rela.gnu.linkonce.sb.*)
+ *(.rela.sdata2 .rela.sdata2.* .rela.gnu.linkonce.s2.*)
+ *(.rela.sbss2 .rela.sbss2.* .rela.gnu.linkonce.sb2.*)
+ *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.init
+ *(.init)
+
+.plt
+ *(.plt)
+
+.text           0xa00c0000     0x2544
+ *(.text .stub .text.* .gnu.linkonce.t.*)
+ .text          0xa00c0000       0x44 start.o
+                0xa00c0000                _mainCRTStartup
+                0xa00c0000                _start
+                0xa00c0000                start
+ .text          0xa00c0044       0xb8 init.o
+                0xa00c0044                coreInitialize
+ .text          0xa00c00fc      0x100 pcb.o
+                0xa00c0120                PCB_TopOfIRQStack
+                0xa00c01b8                PCB_PtrTask2
+                0xa00c01fc                PCB_PtrTask3
+                0xa00c0124                PCB_PtrCurrentTask
+                0xa00c0174                PCB_BottomTask2
+                0xa00c00fc                pcbSetUp
+                0xa00c0114                PCB_Table
+                0xa00c01b8                PCB_BottomTask3
+                0xa00c0174                PCB_PtrTask1
+                0xa00c0128                PCB_PtrNextTask
+                0xa00c0130                PCB_BottomTask1
+                0xa00c012c                PCB_CurrentTask
+ .text          0xa00c01fc      0x27c swiapi.o
+                0xa00c039c                eventIODeviceWriteBlock
+                0xa00c03d0                eventIODeviceReadBlock
+                0xa00c032c                eventIODeviceWriteBit
+                0xa00c01fc                eventIODeviceInit
+                0xa00c0440                bringUpFatalError
+                0xa00c0280                eventIODeviceClose
+                0xa00c02bc                eventIODeviceWriteByte
+                0xa00c040c                bringUpTrace
+                0xa00c0360                eventIODeviceReadBit
+                0xa00c0248                eventIODeviceOpen
+                0xa00c02f0                eventIODeviceReadByte
+ .text          0xa00c0478        0x4 undef.o
+                0xa00c0478                coreUndefinedHandler
+ .text          0xa00c047c       0x44 swi.o
+                0xa00c0494                coreSWIHandler
+                0xa00c047c                coreCallSWI
+ .text          0xa00c04c0        0x4 prefetch.o
+                0xa00c04c0                corePrefetchAbortHandler
+ .text          0xa00c04c4        0x4 data.o
+                0xa00c04c4                coreDataAbortHandler
+ .text          0xa00c04c8        0x4 reserved.o
+                0xa00c04c8                coreReservedHandler
+ .text          0xa00c04cc        0x4 irq.o
+                0xa00c04cc                coreIRQHandler
+ .text          0xa00c04d0        0x4 fiq.o
+                0xa00c04d0                coreFIQHandler
+ .text          0xa00c04d4       0xa0 scheduler.o
+                0xa00c04d4                kernelScheduler
+ .text          0xa00c0574      0x174 swi_handler.o
+                0xa00c0574                eventsSWIHandler
+ .text          0xa00c06e8       0x20 irq_handler.o
+                0xa00c06ec                eventsIRQHandler
+ .text          0xa00c0708       0x88 bringup.o
+                0xa00c0754                bringUpSetR8fiq
+                0xa00c077c                bringUpSetR10fiq
+                0xa00c0768                bringUpSetR9fiq
+                0xa00c0738                bringUpInitFIQRegisters
+ .text          0xa00c0790       0x2c cpsr.o
+                0xa00c0790                modifyControlCPSR
+ .text          0xa00c07bc       0x14 event_init.o
+                0xa00c07bc                eventServicesInit
+ .text          0xa00c07d0      0x170 button_service.o
+                0xa00c0914                eventButtonService
+                0xa00c07d0                eventButtonMaskIrq
+                0xa00c07f0                eventButtonUnmaskIrq
+                0xa00c081c                eventButtonInit
+                0xa00c08a0                eventButtonPressed
+ .text          0xa00c0940       0xa0 tick_service.o
+                0xa00c0984                eventTickService
+                0xa00c0940                eventTickInit
+ .text          0xa00c09e0      0x1dc ddf_io.o
+                0xa00c0a1c                ioOpenDriver
+                0xa00c0b64                ioWriteBlock
+                0xa00c0ad8                ioReadBit
+                0xa00c0b90                ioReadBlock
+                0xa00c0b08                ioWriteByte
+                0xa00c0aac                ioWriteBit
+                0xa00c09e0                ioInitializeDrivers
+                0xa00c0b34                ioReadByte
+                0xa00c0a80                ioCloseDriver
+ .text          0xa00c0bbc      0x2b0 led_driver.o
+                0xa00c0c34                led_open
+                0xa00c0ccc                led_write_bit
+                0xa00c0e2c                led_read_bit
+                0xa00c0bbc                led_init
+                0xa00c0c8c                led_close
+ .text          0xa00c0e6c      0x1d8 serial_driver.o
+                0xa00c0f90                serial_write_byte
+                0xa00c0ff4                serial_read_byte
+                0xa00c0edc                serial_open
+                0xa00c0f78                internal_serial_write
+                0xa00c0f38                serial_close
+                0xa00c0e8c                serial_init
+                0xa00c0fdc                internal_serial_read
+                0xa00c0e6c                internalSerialE7TSetup
+ .text          0xa00c1044      0x154 segment_driver.o
+                0xa00c10f4                segment_setdisplay
+                0xa00c117c                segment_read_byte
+                0xa00c10d0                segment_close
+                0xa00c111c                segment_set
+                0xa00c108c                segment_open
+                0xa00c1148                segment_write_byte
+                0xa00c1044                segment_init
+ .text          0xa00c1198       0x38 mutex.o
+                0xa00c1198                mutex_gatelock
+                0xa00c11b8                mutex_gateunlock
+ .text          0xa00c11d0      0x1d8 cinit.o
+                0xa00c11d0                cinit_init
+                0xa00c12d8                enable_irq
+                0xa00c12f8                C_Entry
+                0xa00c127c                os_timer_init
+                0xa00c1254                os_timer_start
+                0xa00c12e8                disable_irq
+ .text          0xa00c13a8      0x394 cli_com.o
+                0xa00c1728                CLI
+                0xa00c14d0                writeHex
+                0xa00c13d8                reportC
+                0xa00c16cc                reportError
+                0xa00c1508                prettyC
+                0xa00c14ec                writeDec
+                0xa00c15b4                formatString
+                0xa00c13f0                internal_write_dec
+                0xa00c14b0                newLine
+                0xa00c16bc                handleReportedError
+                0xa00c13a8                writeC
+                0xa00c13c0                readC
+                0xa00c1584                prettyPrint
+                0xa00c16c4                reportOK
+                0xa00c1480                write0
+                0xa00c1440                internal_write_hex
+ .text          0xa00c173c      0x448 cli_readline.o
+                0xa00c192c                ReadLineZ
+                0xa00c173c                xstrlen
+                0xa00c1764                xstrcpy
+                0xa00c199c                readLine
+                0xa00c1778                xmemmove
+ .text          0xa00c1b84       0x3c cli_shell.o
+                0xa00c1b84                shell
+ .text          0xa00c1bc0      0x138 cli_serial.o
+                0xa00c1cb8                closeHost
+                0xa00c1c88                readCharFromHost
+                0xa00c1c24                writeCharToHost
+                0xa00c1bc0                openHost
+                0xa00c1c54                printToHost
+ .text          0xa00c1cf8       0x18 uid.o
+                0xa00c1cf8                uid_generate
+ .text          0xa00c1d10      0x3c4 task1_start.o
+                0xa00c1d8c                switchOffRedLED
+                0xa00c1dbc                startTask
+                0xa00c1d5c                switchOnRedLED
+                0xa00c1d10                openRedLED
+                0xa00c206c                C_EntryTask1
+                0xa00c1f80                killTask
+                0xa00c2010                checkCmd
+ .text          0xa00c20d4      0x11c task2_start.o
+                0xa00c218c                C_EntryTask2
+                0xa00c212c                switchOnOrangeLED
+                0xa00c215c                switchOffOrangeLED
+                0xa00c20d4                openOrangeLED
+ .text          0xa00c21f0      0x19c task3_start.o
+                0xa00c2240                C_EntryTask3
+                0xa00c21f0                banner
+ .text          0xa00c238c       0x54 task4_start.o
+                0xa00c238c                C_EntryTask4
+ .text          0xa00c23e0      0x164 serial.o
+                0xa00c24a4                GetChar
+                0xa00c24cc                PutString
+                0xa00c2500                GetString
+                0xa00c247c                PutChar
+                0xa00c23e0                SerialInit
+ *(.gnu.warning)
+ *(.glue_7t)
+ *(.glue_7)
+                0xa00c2544                __text_start = .
+ *(.text)
+ *(strings)
+                0xa00c2544                __text_end = .
+
+.fini
+ *(.fini)
+                0xa00c2544                PROVIDE (__etext, .)
+                0xa00c2544                PROVIDE (_etext, .)
+                0xa00c2544                PROVIDE (etext, .)
+
+.rodata         0xa00c2544      0x130
+ *(.rodata .rodata.* .gnu.linkonce.r.*)
+ .rodata.str1.4
+                0xa00c2544        0x9 cinit.o
+                                  0xc (size before relaxing)
+ *fill*         0xa00c254d        0x3 00
+ .rodata        0xa00c2550       0x14 cli_com.o
+                0xa00c2550                digits
+ .rodata.str1.4
+                0xa00c2564        0x8 cli_readline.o
+ .rodata.str1.4
+                0xa00c256c        0x6 cli_shell.o
+                                  0x8 (size before relaxing)
+ *fill*         0xa00c2572        0x2 00
+ .rodata.str1.4
+                0xa00c2574       0xa7 task1_start.o
+                                 0xb4 (size before relaxing)
+ *fill*         0xa00c261b        0x1 00
+ .rodata.str1.4
+                0xa00c261c       0x58 task3_start.o
+                0xa00c2674                __rodata_start = .
+ *(.rodata)
+                0xa00c2674                __rodata_end = .
+
+.rodata1
+ *(.rodata1)
+
+.sdata2
+ *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
+
+.sbss2
+ *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)
+
+.eh_frame_hdr
+ *(.eh_frame_hdr)
+                0xa00c2774                . = (ALIGN (0x100) + (. & 0xff))
+                0xa00c2774                . = ALIGN (0x4)
+                0xa00c2774                PROVIDE (__preinit_array_start, .)
+
+.preinit_array
+ *(.preinit_array)
+                0xa00c2774                PROVIDE (__preinit_array_end, .)
+                0xa00c2774                PROVIDE (__init_array_start, .)
+
+.init_array
+ *(.init_array)
+                0xa00c2774                PROVIDE (__init_array_end, .)
+                0xa00c2774                PROVIDE (__fini_array_start, .)
+
+.fini_array
+ *(.fini_array)
+                0xa00c2774                PROVIDE (__fini_array_end, .)
+
+.data           0xa00c2674       0xdc
+                0xa00c2674                __data_start = .
+ *(.data .data.* .gnu.linkonce.d.*)
+ .data          0xa00c2674        0x4 tick_service.o
+                0xa00c2674                xLED
+ .data          0xa00c2678       0x90 ddf_io.o
+                0xa00c2678                devices
+ .data          0xa00c2708       0x40 segment_driver.o
+ .data          0xa00c2748        0x4 mutex.o
+                0xa00c2748                semaphore
+ .data          0xa00c274c        0x4 uid.o
+                0xa00c274c                new_uid
+                0xa00c2750                __data_start = .
+ *(.data)
+                0xa00c2750                __data_end = .
+
+.data1
+ *(.data1)
+
+.tdata
+ *(.tdata .tdata.* .gnu.linkonce.td.*)
+
+.tbss
+ *(.tbss .tbss.* .gnu.linkonce.tb.*)
+ *(.tcommon)
+
+.eh_frame
+ *(.eh_frame)
+
+.gcc_except_table
+ *(.gcc_except_table)
+
+.dynamic
+ *(.dynamic)
+
+.ctors
+ *crtbegin.o(.ctors)
+ *(EXCLUDE_FILE(*crtend.o) .ctors)
+ *(SORT(.ctors.*))
+ *(.ctors)
+
+.dtors
+ *crtbegin.o(.dtors)
+ *(EXCLUDE_FILE(*crtend.o) .dtors)
+ *(SORT(.dtors.*))
+ *(.dtors)
+
+.jcr
+ *(.jcr)
+
+.got
+ *(.got.plt)
+ *(.got)
+
+.sdata
+ *(.sdata .sdata.* .gnu.linkonce.s.*)
+                0xa00c2750                _edata = .
+                0xa00c2750                PROVIDE (edata, .)
+                0xa00c2750                __bss_start = .
+                0xa00c2750                __bss_start__ = .
+
+.sbss           0xa00c2774        0x0
+                0xa00c2774                PROVIDE (__sbss_start, .)
+                0xa00c2774                PROVIDE (___sbss_start, .)
+ *(.dynsbss)
+ *(.sbss .sbss.* .gnu.linkonce.sb.*)
+ *(.scommon)
+                0xa00c2774                PROVIDE (__sbss_end, .)
+                0xa00c2774                PROVIDE (___sbss_end, .)
+
+.bss            0xa00c2760      0x4c4
+ *(.dynbss)
+ *(.bss .bss.* .gnu.linkonce.b.*)
+ .bss           0xa00c2760        0x1 tick_service.o
+ *fill*         0xa00c2761        0x3 00
+ .bss           0xa00c2764        0x4 cli_com.o
+ *(COMMON)
+ *fill*         0xa00c2768       0x18 00
+ COMMON         0xa00c2780       0x10 swiapi.o
+                                  0x0 (size before relaxing)
+                0xa00c2780                rs
+ *fill*         0xa00c2790       0x10 00
+ COMMON         0xa00c27a0       0x24 button_service.o
+                                  0x0 (size before relaxing)
+                0xa00c27a0                ledUID
+                0xa00c27c0                ledNode
+ *fill*         0xa00c27c4       0x1c 00
+ COMMON         0xa00c27e0        0x4 tick_service.o
+                                  0x0 (size before relaxing)
+                0xa00c27e0                countdown
+ *fill*         0xa00c27e4       0x1c 00
+ COMMON         0xa00c2800        0x8 led_driver.o
+                                  0x0 (size before relaxing)
+                0xa00c2800                diodes
+ *fill*         0xa00c2808       0x18 00
+ COMMON         0xa00c2820       0x10 serial_driver.o
+                                  0x0 (size before relaxing)
+                0xa00c2820                node
+ *fill*         0xa00c2830       0x10 00
+ COMMON         0xa00c2840        0x8 segment_driver.o
+                                  0x0 (size before relaxing)
+                0xa00c2840                display
+ *fill*         0xa00c2848       0x18 00
+ COMMON         0xa00c2860       0x70 cinit.o
+                                  0x0 (size before relaxing)
+                0xa00c2860                pcb_exist
+                0xa00c2880                STATE
+                0xa00c28a0                task_to_pcb
+                0xa00c28c0                running_task
+ *fill*         0xa00c28d0       0x10 00
+ COMMON         0xa00c28e0      0x224 cli_com.o
+                                  0x0 (size before relaxing)
+                0xa00c28e0                gpbuff
+                0xa00c29e0                report_buff
+                0xa00c29e8                command_line
+                0xa00c2b00                error_buff
+ *fill*         0xa00c2b04       0x1c 00
+ COMMON         0xa00c2b20       0x24 cli_serial.o
+                                  0x0 (size before relaxing)
+                0xa00c2b20                host
+                0xa00c2b40                serial
+ *fill*         0xa00c2b44       0x1c 00
+ COMMON         0xa00c2b60       0x84 task1_start.o
+                                  0x0 (size before relaxing)
+                0xa00c2b60                red_host
+                0xa00c2b80                stack
+                0xa00c2ba0                rled
+                0xa00c2bc0                task
+                0xa00c2be0                pcb
+ *fill*         0xa00c2be4       0x1c 00
+ COMMON         0xa00c2c00       0x24 task2_start.o
+                                  0x0 (size before relaxing)
+                0xa00c2c00                oled
+                0xa00c2c08                led
+                0xa00c2c20                orange_host
+                0xa00c2c24                . = ALIGN (0x4)
+                0xa00c2c24                __bss_start = .
+ *(.text)
+ *(strings)
+                0xa00c2c24                __bss_end = .
+                0xa00c2c24                . = ALIGN (0x4)
+                0xa00c2c24                _end = .
+                0xa00c2c24                _bss_end__ = .
+                0xa00c2c24                __bss_end__ = .
+                0xa00c2c24                __end__ = .
+                0xa00c2c24                PROVIDE (end, .)
+
+.stab
+ *(.stab)
+
+.stabstr
+ *(.stabstr)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment        0x00000000      0x17a
+ *(.comment)
+ .comment       0x00000000       0x12 swiapi.o
+ .comment       0x00000012       0x12 swi_handler.o
+ .comment       0x00000024       0x12 event_init.o
+ .comment       0x00000036       0x12 button_service.o
+ .comment       0x00000048       0x12 tick_service.o
+ .comment       0x0000005a       0x12 ddf_io.o
+ .comment       0x0000006c       0x12 led_driver.o
+ .comment       0x0000007e       0x12 serial_driver.o
+ .comment       0x00000090       0x12 segment_driver.o
+ .comment       0x000000a2       0x12 mutex.o
+ .comment       0x000000b4       0x12 cinit.o
+ .comment       0x000000c6       0x12 cli_com.o
+ .comment       0x000000d8       0x12 cli_readline.o
+ .comment       0x000000ea       0x12 cli_shell.o
+ .comment       0x000000fc       0x12 cli_serial.o
+ .comment       0x0000010e       0x12 uid.o
+ .comment       0x00000120       0x12 task1_start.o
+ .comment       0x00000132       0x12 task2_start.o
+ .comment       0x00000144       0x12 task3_start.o
+ .comment       0x00000156       0x12 task4_start.o
+ .comment       0x00000168       0x12 serial.o
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges
+ *(.debug_aranges)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info
+ *(.debug_info .gnu.linkonce.wi.*)
+
+.debug_abbrev
+ *(.debug_abbrev)
+
+.debug_line
+ *(.debug_line)
+
+.debug_frame
+ *(.debug_frame)
+
+.debug_str
+ *(.debug_str)
+
+.debug_loc
+ *(.debug_loc)
+
+.debug_macinfo
+ *(.debug_macinfo)
+
+.debug_weaknames
+ *(.debug_weaknames)
+
+.debug_funcnames
+ *(.debug_funcnames)
+
+.debug_typenames
+ *(.debug_typenames)
+
+.debug_varnames
+ *(.debug_varnames)
+
+.stack          0x00080000        0x0
+                0x00080000                _stack = .
+ *(.stack)
+OUTPUT(../image/slos.elf elf32-littlearm)

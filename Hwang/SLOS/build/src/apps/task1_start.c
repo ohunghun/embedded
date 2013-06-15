@@ -191,6 +191,11 @@ void switchOffRedLED(void)
  * Never terminates
  */
 
+#define	__REG	*(volatile unsigned long *)
+#define	__REG32	*(volatile unsigned long *)
+#define	__REG16	*(volatile unsigned short *)
+#define	__REG8	*(volatile unsigned char *)
+
 extern unsigned int pcb_exist[3];
 extern unsigned int running_task[4];
 extern int task_to_pcb[4];
@@ -201,14 +206,12 @@ void(*task)(void);
 void* pcb;
 void* stack;
 
-void startTask(char num)
+void startTask(char num, void(*task_addr)(void), char irq)
 {
-	//void(*task)(void);
-	//void* pcb;
-	//void* stack;
 	int i;
 	
-	disable_irq();	// disable irq
+	if(irq != 0)
+		disable_irq();	// disable irq
 
 	num -= 49;
 	if(running_task[num] == 1)
@@ -226,23 +229,25 @@ void startTask(char num)
 		}
 
 		// set task function address
-		switch(num)
+		if(task_addr == 0)
 		{
-		case 0:
-			task = C_EntryTask1;
-			break;
-		case 1:
-			task = C_EntryTask2;
-			break;
-		case 2:
-			task = C_EntryTask3;
-			break;
-		case 3:
-			task = C_EntryTask4;
-			break;
-		default:
-			break;
+			switch(num)
+			{
+			case 0:
+				task = C_EntryTask1;
+				break;
+			case 1:
+				task = C_EntryTask2;
+				break;
+			case 2:
+				task = C_EntryTask3;
+				break;
+			default:
+				break;
+			}
 		}
+		else
+			task = task_addr;
 
 		// set pcb & stack address
 		switch(i)
@@ -282,19 +287,50 @@ void startTask(char num)
 		PutString(". \r\n");
 	}
 
-	enable_irq();	// enable irq
+	if(irq != 0)
+		enable_irq();	// enable irq
 }
 
-void killTask(char num)
+/*
+extern void* PCB_BottomTask1;
+extern void* PCB_BottomTask2;
+extern void* PCB_BottomTask3;*/
+
+void killTask(char num, char irq)
 {	
 	int i;
-	disable_irq();	// disable irq
+	int* pcb;
+
+	if(irq != 0)
+		disable_irq();	// disable irq
 
 	num -= 49;
 	if(running_task[num] == 0)
 		PutString("The task is already dead. \r\n");
 	else{
 		running_task[num] = 0;
+
+		///////
+/*
+		switch(task_to_pcb[num])
+		{
+		case 0:
+			pcb = (int*)&PCB_PtrTask1;
+			break;
+		case 1:
+			pcb = (int*)&PCB_PtrTask2;
+			break;
+		case 2:
+			pcb = (int*)&PCB_PtrTask3;
+			break;
+		}
+		for(i = -4; i >= -68; i -=4)
+		{
+			__REG32(pcb + i) = 0;
+		}
+*/
+		///////
+
 		pcb_exist[task_to_pcb[num]] = 0;
 		task_to_pcb[num] = -1;
 
@@ -303,7 +339,98 @@ void killTask(char num)
 		PutString(". \r\n");
 	}
 
-	enable_irq();	// enable irq
+	if(irq != 0)
+		enable_irq();	// enable irq
+}
+
+extern int eval_task_num;
+extern char eval_flag;
+void evaluateTask(char num)
+{	
+	eval_flag = 1;
+	eval_task_num = num - 49;
+}
+
+extern unsigned int task_priority[4];
+void priorityChange(char num, char priority)
+{
+	task_priority[num - 49] = priority - 48;
+}
+
+void printTask()
+{
+	int i;
+
+	for(i = 0; i < 4; i++)
+	{
+		if(running_task[i] == 1)
+		{
+			PutString("task ");
+			PutNum(i+1);
+			PutString(" 's priority is ");
+			PutNum(task_priority[i]);
+			PutString("\r\n");
+		}
+	}
+	/*
+	PutString("pcb1 ");
+	PutNum((int)&PCB_PtrTask1);
+	PutString("\r\n");
+	PutString("pcb2 ");
+	PutNum((int)&PCB_PtrTask2);
+	PutString("\r\n");
+	PutString("pcb3 ");
+	PutNum((int)&PCB_PtrTask3);
+	PutString("\r\n");
+
+	PutString("pcb1 b ");
+	PutNum((int)&PCB_BottomTask1);
+	PutString("\r\n");
+	PutString("pcb2 b ");
+	PutNum((int)&PCB_BottomTask2);
+	PutString("\r\n");
+	PutString("pcb3 b ");
+	PutNum((int)&PCB_BottomTask3);
+	PutString("\r\n");*/
+}
+
+#define DYNAMIC_TASK_ADDR	0xA0100000	// Prepared memory address : 0xA0100000 for new task only. New task size must be smaller than 10000 bytes.
+// 0xA0100000	kernel
+// 0xA2600000	usr
+void makeTask()
+{
+	unsigned int size;
+	unsigned int addr;
+	char priority;
+
+	disable_irq();
+
+	killTask('4', 0);
+
+	// Receive the task size.
+	size = GetChar();
+	size |= (GetChar() << 8);
+	size |= (GetChar() << 16);
+	size |= (GetChar() << 24);
+
+	// Receive priority of the task.
+	priority = GetChar();
+
+	// Copy bin file to the prepared memory.
+	addr = DYNAMIC_TASK_ADDR;
+	while(size > 0)
+	{
+		__REG8(addr++) = GetChar();
+		size--;
+	}
+
+	// Start the task.
+	startTask('4', (void(*)(void))DYNAMIC_TASK_ADDR, 0);
+	priorityChange('4', priority + 48);
+
+	PutString("task is created.\r");
+
+	enable_irq();
 }
 
 char checkCmd(char* str)
@@ -315,12 +442,29 @@ char checkCmd(char* str)
 
 	num = str[2];
 
-	if(str[1] == 's')
-		startTask(num);
-	else if(str[1] == 'k')
-		killTask(num);
-	else
+	switch(str[1])
+	{
+	case 's':
+		startTask(num, 0, 1);
+		break;
+	case 'k':
+		killTask(num, 1);
+		break;
+	case 'e':
+		evaluateTask(num);
+		break;
+	case 'p':
+		priorityChange(num, str[3]);
+		break;
+	case 'a':
+		printTask();
+		break;
+	case 'm':
+		makeTask();
+		break;
+	default:
 		return 0;
+	}
 
 	return 1;
 }

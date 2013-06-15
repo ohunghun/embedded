@@ -25,7 +25,6 @@
      .global PCB_TopOfIRQStack
      .global kernelScheduler
 	  .global TASK_num
-	  .extern running_task
 kernelScheduler:
 /*
 @ ---------------------------------------------------
@@ -35,7 +34,16 @@ kernelScheduler:
 CurrentTask:
 
      LDR     r3,=PCB_CurrentTask
-     LDR     r0,[r3]      
+     LDR     r0,[r3]   
+
+	  LDR		 r1, =task_remainslice
+	  LDR		 r2, [r1,r0,LSL#2]
+	  CMP		 r2, #0
+	  BNE		 OneMore	
+	  LDR		 r2, =task_priority
+	  LDR		 r2, [r2,r0,LSL#2]
+	  STR		 r2, [r1,r0,LSL#2]
+   
      LDR     r1,=PCB_Table
      LDR     r1,[r1,r0,LSL#2]    
      LDR     r2,=PCB_PtrCurrentTask
@@ -83,5 +91,11 @@ handler_contextswitch:
      LDMIA   r13,{r0-r14}^         
      LDR     r13,=PCB_TopOfIRQStack
      LDR     r13,[r13]
-     MOVS    pc,r14               
+     MOVS    pc,r14     
+
+OneMore:
+	  SUB		 r2, r2, #1
+	  STR		 r2, [r1,r0,LSL#2]
+     LDMFD   sp!,{r0-r3,r12,r14} 
+	  MOVS    pc,r14    
      .end

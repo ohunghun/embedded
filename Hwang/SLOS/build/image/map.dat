@@ -5,6 +5,8 @@ Common symbol       size              file
 oled                0x4               task2_start.o
 ledUID              0x4               button_service.o
 pcb_exist           0xc               cinit.o
+acc_tick            0x4               tick_service.o
+eval_flag           0x1               cinit.o
 host                0x4               cli_serial.o
 gpbuff              0x100             cli_com.o
 report_buff         0x4               cli_com.o
@@ -14,6 +16,7 @@ display             0x8               segment_driver.o
 stack               0x4               task1_start.o
 rs                  0x10              swiapi.o
 led                 0x1               task2_start.o
+eval_time           0x4               cinit.o
 serial              0x4               cli_serial.o
 rled                0x4               task1_start.o
 STATE               0x4               cinit.o
@@ -21,9 +24,12 @@ countdown           0x4               tick_service.o
 command_line        0x100             cli_com.o
 task                0x4               task1_start.o
 orange_host         0x4               task2_start.o
+eval_task_num       0x4               cinit.o
 task_to_pcb         0x10              cinit.o
+task_remainslice    0x10              cinit.o
 running_task        0x10              cinit.o
 pcb                 0x4               task1_start.o
+task_priority       0x10              cinit.o
 diodes              0x8               led_driver.o
 error_buff          0x4               cli_com.o
 ledNode             0x4               button_service.o
@@ -146,7 +152,7 @@ LOAD serial.o
 .plt
  *(.plt)
 
-.text           0xa00c0000     0x2544
+.text           0xa00c0000     0x288c
  *(.text .stub .text.* .gnu.linkonce.t.*)
  .text          0xa00c0000       0x44 start.o
                 0xa00c0000                _mainCRTStartup
@@ -194,167 +200,176 @@ LOAD serial.o
                 0xa00c04cc                coreIRQHandler
  .text          0xa00c04d0        0x4 fiq.o
                 0xa00c04d0                coreFIQHandler
- .text          0xa00c04d4       0xa0 scheduler.o
+ .text          0xa00c04d4       0xd4 scheduler.o
                 0xa00c04d4                kernelScheduler
- .text          0xa00c0574      0x174 swi_handler.o
-                0xa00c0574                eventsSWIHandler
- .text          0xa00c06e8       0x20 irq_handler.o
-                0xa00c06ec                eventsIRQHandler
- .text          0xa00c0708       0x88 bringup.o
-                0xa00c0754                bringUpSetR8fiq
-                0xa00c077c                bringUpSetR10fiq
-                0xa00c0768                bringUpSetR9fiq
-                0xa00c0738                bringUpInitFIQRegisters
- .text          0xa00c0790       0x2c cpsr.o
-                0xa00c0790                modifyControlCPSR
- .text          0xa00c07bc       0x14 event_init.o
-                0xa00c07bc                eventServicesInit
- .text          0xa00c07d0      0x170 button_service.o
-                0xa00c0914                eventButtonService
-                0xa00c07d0                eventButtonMaskIrq
-                0xa00c07f0                eventButtonUnmaskIrq
-                0xa00c081c                eventButtonInit
-                0xa00c08a0                eventButtonPressed
- .text          0xa00c0940       0xa0 tick_service.o
-                0xa00c0984                eventTickService
-                0xa00c0940                eventTickInit
- .text          0xa00c09e0      0x1dc ddf_io.o
-                0xa00c0a1c                ioOpenDriver
-                0xa00c0b64                ioWriteBlock
-                0xa00c0ad8                ioReadBit
-                0xa00c0b90                ioReadBlock
-                0xa00c0b08                ioWriteByte
-                0xa00c0aac                ioWriteBit
-                0xa00c09e0                ioInitializeDrivers
-                0xa00c0b34                ioReadByte
-                0xa00c0a80                ioCloseDriver
- .text          0xa00c0bbc      0x2b0 led_driver.o
-                0xa00c0c34                led_open
-                0xa00c0ccc                led_write_bit
-                0xa00c0e2c                led_read_bit
-                0xa00c0bbc                led_init
-                0xa00c0c8c                led_close
- .text          0xa00c0e6c      0x1d8 serial_driver.o
-                0xa00c0f90                serial_write_byte
-                0xa00c0ff4                serial_read_byte
-                0xa00c0edc                serial_open
-                0xa00c0f78                internal_serial_write
-                0xa00c0f38                serial_close
-                0xa00c0e8c                serial_init
-                0xa00c0fdc                internal_serial_read
-                0xa00c0e6c                internalSerialE7TSetup
- .text          0xa00c1044      0x154 segment_driver.o
-                0xa00c10f4                segment_setdisplay
-                0xa00c117c                segment_read_byte
-                0xa00c10d0                segment_close
-                0xa00c111c                segment_set
-                0xa00c108c                segment_open
-                0xa00c1148                segment_write_byte
-                0xa00c1044                segment_init
- .text          0xa00c1198       0x38 mutex.o
-                0xa00c1198                mutex_gatelock
-                0xa00c11b8                mutex_gateunlock
- .text          0xa00c11d0      0x1d8 cinit.o
-                0xa00c11d0                cinit_init
-                0xa00c12d8                enable_irq
-                0xa00c12f8                C_Entry
-                0xa00c127c                os_timer_init
-                0xa00c1254                os_timer_start
-                0xa00c12e8                disable_irq
- .text          0xa00c13a8      0x394 cli_com.o
-                0xa00c1728                CLI
-                0xa00c14d0                writeHex
-                0xa00c13d8                reportC
-                0xa00c16cc                reportError
-                0xa00c1508                prettyC
-                0xa00c14ec                writeDec
-                0xa00c15b4                formatString
-                0xa00c13f0                internal_write_dec
-                0xa00c14b0                newLine
-                0xa00c16bc                handleReportedError
-                0xa00c13a8                writeC
-                0xa00c13c0                readC
-                0xa00c1584                prettyPrint
-                0xa00c16c4                reportOK
-                0xa00c1480                write0
-                0xa00c1440                internal_write_hex
- .text          0xa00c173c      0x448 cli_readline.o
-                0xa00c192c                ReadLineZ
-                0xa00c173c                xstrlen
-                0xa00c1764                xstrcpy
-                0xa00c199c                readLine
-                0xa00c1778                xmemmove
- .text          0xa00c1b84       0x3c cli_shell.o
-                0xa00c1b84                shell
- .text          0xa00c1bc0      0x138 cli_serial.o
-                0xa00c1cb8                closeHost
-                0xa00c1c88                readCharFromHost
-                0xa00c1c24                writeCharToHost
-                0xa00c1bc0                openHost
-                0xa00c1c54                printToHost
- .text          0xa00c1cf8       0x18 uid.o
-                0xa00c1cf8                uid_generate
- .text          0xa00c1d10      0x3c4 task1_start.o
-                0xa00c1d8c                switchOffRedLED
-                0xa00c1dbc                startTask
-                0xa00c1d5c                switchOnRedLED
-                0xa00c1d10                openRedLED
-                0xa00c206c                C_EntryTask1
-                0xa00c1f80                killTask
-                0xa00c2010                checkCmd
- .text          0xa00c20d4      0x11c task2_start.o
-                0xa00c218c                C_EntryTask2
-                0xa00c212c                switchOnOrangeLED
-                0xa00c215c                switchOffOrangeLED
-                0xa00c20d4                openOrangeLED
- .text          0xa00c21f0      0x19c task3_start.o
-                0xa00c2240                C_EntryTask3
-                0xa00c21f0                banner
- .text          0xa00c238c       0x54 task4_start.o
-                0xa00c238c                C_EntryTask4
- .text          0xa00c23e0      0x164 serial.o
-                0xa00c24a4                GetChar
-                0xa00c24cc                PutString
-                0xa00c2500                GetString
-                0xa00c247c                PutChar
-                0xa00c23e0                SerialInit
+ .text          0xa00c05a8      0x174 swi_handler.o
+                0xa00c05a8                eventsSWIHandler
+ .text          0xa00c071c       0x20 irq_handler.o
+                0xa00c0720                eventsIRQHandler
+ .text          0xa00c073c       0x88 bringup.o
+                0xa00c0788                bringUpSetR8fiq
+                0xa00c07b0                bringUpSetR10fiq
+                0xa00c079c                bringUpSetR9fiq
+                0xa00c076c                bringUpInitFIQRegisters
+ .text          0xa00c07c4       0x2c cpsr.o
+                0xa00c07c4                modifyControlCPSR
+ .text          0xa00c07f0       0x14 event_init.o
+                0xa00c07f0                eventServicesInit
+ .text          0xa00c0804      0x170 button_service.o
+                0xa00c0948                eventButtonService
+                0xa00c0804                eventButtonMaskIrq
+                0xa00c0824                eventButtonUnmaskIrq
+                0xa00c0850                eventButtonInit
+                0xa00c08d4                eventButtonPressed
+ .text          0xa00c0974      0x170 tick_service.o
+                0xa00c09b8                eventTickService
+                0xa00c0974                eventTickInit
+ .text          0xa00c0ae4      0x1dc ddf_io.o
+                0xa00c0b20                ioOpenDriver
+                0xa00c0c68                ioWriteBlock
+                0xa00c0bdc                ioReadBit
+                0xa00c0c94                ioReadBlock
+                0xa00c0c0c                ioWriteByte
+                0xa00c0bb0                ioWriteBit
+                0xa00c0ae4                ioInitializeDrivers
+                0xa00c0c38                ioReadByte
+                0xa00c0b84                ioCloseDriver
+ .text          0xa00c0cc0      0x2b0 led_driver.o
+                0xa00c0d38                led_open
+                0xa00c0dd0                led_write_bit
+                0xa00c0f30                led_read_bit
+                0xa00c0cc0                led_init
+                0xa00c0d90                led_close
+ .text          0xa00c0f70      0x1d8 serial_driver.o
+                0xa00c1094                serial_write_byte
+                0xa00c10f8                serial_read_byte
+                0xa00c0fe0                serial_open
+                0xa00c107c                internal_serial_write
+                0xa00c103c                serial_close
+                0xa00c0f90                serial_init
+                0xa00c10e0                internal_serial_read
+                0xa00c0f70                internalSerialE7TSetup
+ .text          0xa00c1148      0x154 segment_driver.o
+                0xa00c11f8                segment_setdisplay
+                0xa00c1280                segment_read_byte
+                0xa00c11d4                segment_close
+                0xa00c1220                segment_set
+                0xa00c1190                segment_open
+                0xa00c124c                segment_write_byte
+                0xa00c1148                segment_init
+ .text          0xa00c129c       0x38 mutex.o
+                0xa00c129c                mutex_gatelock
+                0xa00c12bc                mutex_gateunlock
+ .text          0xa00c12d4      0x1d8 cinit.o
+                0xa00c12d4                cinit_init
+                0xa00c13dc                enable_irq
+                0xa00c13fc                C_Entry
+                0xa00c1380                os_timer_init
+                0xa00c1358                os_timer_start
+                0xa00c13ec                disable_irq
+ .text          0xa00c14ac      0x394 cli_com.o
+                0xa00c182c                CLI
+                0xa00c15d4                writeHex
+                0xa00c14dc                reportC
+                0xa00c17d0                reportError
+                0xa00c160c                prettyC
+                0xa00c15f0                writeDec
+                0xa00c16b8                formatString
+                0xa00c14f4                internal_write_dec
+                0xa00c15b4                newLine
+                0xa00c17c0                handleReportedError
+                0xa00c14ac                writeC
+                0xa00c14c4                readC
+                0xa00c1688                prettyPrint
+                0xa00c17c8                reportOK
+                0xa00c1584                write0
+                0xa00c1544                internal_write_hex
+ .text          0xa00c1840      0x448 cli_readline.o
+                0xa00c1a30                ReadLineZ
+                0xa00c1840                xstrlen
+                0xa00c1868                xstrcpy
+                0xa00c1aa0                readLine
+                0xa00c187c                xmemmove
+ .text          0xa00c1c88       0x3c cli_shell.o
+                0xa00c1c88                shell
+ .text          0xa00c1cc4      0x138 cli_serial.o
+                0xa00c1dbc                closeHost
+                0xa00c1d8c                readCharFromHost
+                0xa00c1d28                writeCharToHost
+                0xa00c1cc4                openHost
+                0xa00c1d58                printToHost
+ .text          0xa00c1dfc       0x18 uid.o
+                0xa00c1dfc                uid_generate
+ .text          0xa00c1e14      0x5cc task1_start.o
+                0xa00c1e90                switchOffRedLED
+                0xa00c1ec0                startTask
+                0xa00c2180                printTask
+                0xa00c1e60                switchOnRedLED
+                0xa00c1e14                openRedLED
+                0xa00c2378                C_EntryTask1
+                0xa00c21f0                makeTask
+                0xa00c209c                killTask
+                0xa00c2138                evaluateTask
+                0xa00c2160                priorityChange
+                0xa00c229c                checkCmd
+ .text          0xa00c23e0      0x11c task2_start.o
+                0xa00c2498                C_EntryTask2
+                0xa00c2438                switchOnOrangeLED
+                0xa00c2468                switchOffOrangeLED
+                0xa00c23e0                openOrangeLED
+ .text          0xa00c24fc      0x19c task3_start.o
+                0xa00c254c                C_EntryTask3
+                0xa00c24fc                banner
+ .text          0xa00c2698       0x54 task4_start.o
+                0xa00c2698                C_EntryTask4
+ .text          0xa00c26ec      0x1a0 serial.o
+                0xa00c27b0                GetChar
+                0xa00c27d8                PutString
+                0xa00c280c                GetString
+                0xa00c2850                PutNum
+                0xa00c2788                PutChar
+                0xa00c26ec                SerialInit
  *(.gnu.warning)
  *(.glue_7t)
  *(.glue_7)
-                0xa00c2544                __text_start = .
+                0xa00c288c                __text_start = .
  *(.text)
  *(strings)
-                0xa00c2544                __text_end = .
+                0xa00c288c                __text_end = .
 
 .fini
  *(.fini)
-                0xa00c2544                PROVIDE (__etext, .)
-                0xa00c2544                PROVIDE (_etext, .)
-                0xa00c2544                PROVIDE (etext, .)
+                0xa00c288c                PROVIDE (__etext, .)
+                0xa00c288c                PROVIDE (_etext, .)
+                0xa00c288c                PROVIDE (etext, .)
 
-.rodata         0xa00c2544      0x130
+.rodata         0xa00c288c      0x164
  *(.rodata .rodata.* .gnu.linkonce.r.*)
  .rodata.str1.4
-                0xa00c2544        0x9 cinit.o
-                                  0xc (size before relaxing)
- *fill*         0xa00c254d        0x3 00
- .rodata        0xa00c2550       0x14 cli_com.o
-                0xa00c2550                digits
- .rodata.str1.4
-                0xa00c2564        0x8 cli_readline.o
- .rodata.str1.4
-                0xa00c256c        0x6 cli_shell.o
+                0xa00c288c        0x3 tick_service.o
                                   0x8 (size before relaxing)
- *fill*         0xa00c2572        0x2 00
+ *fill*         0xa00c288f        0x1 00
  .rodata.str1.4
-                0xa00c2574       0xa7 task1_start.o
-                                 0xb4 (size before relaxing)
- *fill*         0xa00c261b        0x1 00
+                0xa00c2890        0x9 cinit.o
+                                  0xc (size before relaxing)
+ *fill*         0xa00c2899        0x3 00
+ .rodata        0xa00c289c       0x14 cli_com.o
+                0xa00c289c                digits
  .rodata.str1.4
-                0xa00c261c       0x58 task3_start.o
-                0xa00c2674                __rodata_start = .
+                0xa00c28b0        0x8 cli_readline.o
+ .rodata.str1.4
+                0xa00c28b8        0x6 cli_shell.o
+                                  0x8 (size before relaxing)
+ *fill*         0xa00c28be        0x2 00
+ .rodata.str1.4
+                0xa00c28c0       0xd7 task1_start.o
+                                 0xe4 (size before relaxing)
+ *fill*         0xa00c2997        0x1 00
+ .rodata.str1.4
+                0xa00c2998       0x58 task3_start.o
+                0xa00c29f0                __rodata_start = .
  *(.rodata)
-                0xa00c2674                __rodata_end = .
+                0xa00c29f0                __rodata_end = .
 
 .rodata1
  *(.rodata1)
@@ -367,39 +382,39 @@ LOAD serial.o
 
 .eh_frame_hdr
  *(.eh_frame_hdr)
-                0xa00c2774                . = (ALIGN (0x100) + (. & 0xff))
-                0xa00c2774                . = ALIGN (0x4)
-                0xa00c2774                PROVIDE (__preinit_array_start, .)
+                0xa00c2af0                . = (ALIGN (0x100) + (. & 0xff))
+                0xa00c2af0                . = ALIGN (0x4)
+                0xa00c2af0                PROVIDE (__preinit_array_start, .)
 
 .preinit_array
  *(.preinit_array)
-                0xa00c2774                PROVIDE (__preinit_array_end, .)
-                0xa00c2774                PROVIDE (__init_array_start, .)
+                0xa00c2af0                PROVIDE (__preinit_array_end, .)
+                0xa00c2af0                PROVIDE (__init_array_start, .)
 
 .init_array
  *(.init_array)
-                0xa00c2774                PROVIDE (__init_array_end, .)
-                0xa00c2774                PROVIDE (__fini_array_start, .)
+                0xa00c2af0                PROVIDE (__init_array_end, .)
+                0xa00c2af0                PROVIDE (__fini_array_start, .)
 
 .fini_array
  *(.fini_array)
-                0xa00c2774                PROVIDE (__fini_array_end, .)
+                0xa00c2af0                PROVIDE (__fini_array_end, .)
 
-.data           0xa00c2674       0xdc
-                0xa00c2674                __data_start = .
+.data           0xa00c29f0       0xdc
+                0xa00c29f0                __data_start = .
  *(.data .data.* .gnu.linkonce.d.*)
- .data          0xa00c2674        0x4 tick_service.o
-                0xa00c2674                xLED
- .data          0xa00c2678       0x90 ddf_io.o
-                0xa00c2678                devices
- .data          0xa00c2708       0x40 segment_driver.o
- .data          0xa00c2748        0x4 mutex.o
-                0xa00c2748                semaphore
- .data          0xa00c274c        0x4 uid.o
-                0xa00c274c                new_uid
-                0xa00c2750                __data_start = .
+ .data          0xa00c29f0        0x4 tick_service.o
+                0xa00c29f0                xLED
+ .data          0xa00c29f4       0x90 ddf_io.o
+                0xa00c29f4                devices
+ .data          0xa00c2a84       0x40 segment_driver.o
+ .data          0xa00c2ac4        0x4 mutex.o
+                0xa00c2ac4                semaphore
+ .data          0xa00c2ac8        0x4 uid.o
+                0xa00c2ac8                new_uid
+                0xa00c2acc                __data_start = .
  *(.data)
-                0xa00c2750                __data_end = .
+                0xa00c2acc                __data_end = .
 
 .data1
  *(.data1)
@@ -441,96 +456,102 @@ LOAD serial.o
 
 .sdata
  *(.sdata .sdata.* .gnu.linkonce.s.*)
-                0xa00c2750                _edata = .
-                0xa00c2750                PROVIDE (edata, .)
-                0xa00c2750                __bss_start = .
-                0xa00c2750                __bss_start__ = .
+                0xa00c2acc                _edata = .
+                0xa00c2acc                PROVIDE (edata, .)
+                0xa00c2acc                __bss_start = .
+                0xa00c2acc                __bss_start__ = .
 
-.sbss           0xa00c2774        0x0
-                0xa00c2774                PROVIDE (__sbss_start, .)
-                0xa00c2774                PROVIDE (___sbss_start, .)
+.sbss           0xa00c2af0        0x0
+                0xa00c2af0                PROVIDE (__sbss_start, .)
+                0xa00c2af0                PROVIDE (___sbss_start, .)
  *(.dynsbss)
  *(.sbss .sbss.* .gnu.linkonce.sb.*)
  *(.scommon)
-                0xa00c2774                PROVIDE (__sbss_end, .)
-                0xa00c2774                PROVIDE (___sbss_end, .)
+                0xa00c2af0                PROVIDE (__sbss_end, .)
+                0xa00c2af0                PROVIDE (___sbss_end, .)
 
-.bss            0xa00c2760      0x4c4
+.bss            0xa00c2ae0      0x564
  *(.dynbss)
  *(.bss .bss.* .gnu.linkonce.b.*)
- .bss           0xa00c2760        0x1 tick_service.o
- *fill*         0xa00c2761        0x3 00
- .bss           0xa00c2764        0x4 cli_com.o
+ .bss           0xa00c2ae0        0x1 tick_service.o
+ *fill*         0xa00c2ae1        0x3 00
+ .bss           0xa00c2ae4        0x4 cli_com.o
  *(COMMON)
- *fill*         0xa00c2768       0x18 00
- COMMON         0xa00c2780       0x10 swiapi.o
+ *fill*         0xa00c2ae8       0x18 00
+ COMMON         0xa00c2b00       0x10 swiapi.o
                                   0x0 (size before relaxing)
-                0xa00c2780                rs
- *fill*         0xa00c2790       0x10 00
- COMMON         0xa00c27a0       0x24 button_service.o
+                0xa00c2b00                rs
+ *fill*         0xa00c2b10       0x10 00
+ COMMON         0xa00c2b20       0x24 button_service.o
                                   0x0 (size before relaxing)
-                0xa00c27a0                ledUID
-                0xa00c27c0                ledNode
- *fill*         0xa00c27c4       0x1c 00
- COMMON         0xa00c27e0        0x4 tick_service.o
-                                  0x0 (size before relaxing)
-                0xa00c27e0                countdown
- *fill*         0xa00c27e4       0x1c 00
- COMMON         0xa00c2800        0x8 led_driver.o
-                                  0x0 (size before relaxing)
-                0xa00c2800                diodes
- *fill*         0xa00c2808       0x18 00
- COMMON         0xa00c2820       0x10 serial_driver.o
-                                  0x0 (size before relaxing)
-                0xa00c2820                node
- *fill*         0xa00c2830       0x10 00
- COMMON         0xa00c2840        0x8 segment_driver.o
-                                  0x0 (size before relaxing)
-                0xa00c2840                display
- *fill*         0xa00c2848       0x18 00
- COMMON         0xa00c2860       0x70 cinit.o
-                                  0x0 (size before relaxing)
-                0xa00c2860                pcb_exist
-                0xa00c2880                STATE
-                0xa00c28a0                task_to_pcb
-                0xa00c28c0                running_task
- *fill*         0xa00c28d0       0x10 00
- COMMON         0xa00c28e0      0x224 cli_com.o
-                                  0x0 (size before relaxing)
-                0xa00c28e0                gpbuff
-                0xa00c29e0                report_buff
-                0xa00c29e8                command_line
-                0xa00c2b00                error_buff
- *fill*         0xa00c2b04       0x1c 00
- COMMON         0xa00c2b20       0x24 cli_serial.o
-                                  0x0 (size before relaxing)
-                0xa00c2b20                host
-                0xa00c2b40                serial
+                0xa00c2b20                ledUID
+                0xa00c2b40                ledNode
  *fill*         0xa00c2b44       0x1c 00
- COMMON         0xa00c2b60       0x84 task1_start.o
+ COMMON         0xa00c2b60       0x24 tick_service.o
                                   0x0 (size before relaxing)
-                0xa00c2b60                red_host
-                0xa00c2b80                stack
-                0xa00c2ba0                rled
-                0xa00c2bc0                task
-                0xa00c2be0                pcb
- *fill*         0xa00c2be4       0x1c 00
- COMMON         0xa00c2c00       0x24 task2_start.o
+                0xa00c2b60                acc_tick
+                0xa00c2b80                countdown
+ *fill*         0xa00c2b84       0x1c 00
+ COMMON         0xa00c2ba0        0x8 led_driver.o
                                   0x0 (size before relaxing)
-                0xa00c2c00                oled
-                0xa00c2c08                led
-                0xa00c2c20                orange_host
-                0xa00c2c24                . = ALIGN (0x4)
-                0xa00c2c24                __bss_start = .
+                0xa00c2ba0                diodes
+ *fill*         0xa00c2ba8       0x18 00
+ COMMON         0xa00c2bc0       0x10 serial_driver.o
+                                  0x0 (size before relaxing)
+                0xa00c2bc0                node
+ *fill*         0xa00c2bd0       0x10 00
+ COMMON         0xa00c2be0        0x8 segment_driver.o
+                                  0x0 (size before relaxing)
+                0xa00c2be0                display
+ *fill*         0xa00c2be8       0x18 00
+ COMMON         0xa00c2c00       0xf0 cinit.o
+                                  0x0 (size before relaxing)
+                0xa00c2c00                pcb_exist
+                0xa00c2c10                eval_flag
+                0xa00c2c20                eval_time
+                0xa00c2c40                STATE
+                0xa00c2c60                eval_task_num
+                0xa00c2c80                task_to_pcb
+                0xa00c2ca0                task_remainslice
+                0xa00c2cc0                running_task
+                0xa00c2ce0                task_priority
+ *fill*         0xa00c2cf0       0x10 00
+ COMMON         0xa00c2d00      0x224 cli_com.o
+                                  0x0 (size before relaxing)
+                0xa00c2d00                gpbuff
+                0xa00c2e00                report_buff
+                0xa00c2e08                command_line
+                0xa00c2f20                error_buff
+ *fill*         0xa00c2f24       0x1c 00
+ COMMON         0xa00c2f40       0x24 cli_serial.o
+                                  0x0 (size before relaxing)
+                0xa00c2f40                host
+                0xa00c2f60                serial
+ *fill*         0xa00c2f64       0x1c 00
+ COMMON         0xa00c2f80       0x84 task1_start.o
+                                  0x0 (size before relaxing)
+                0xa00c2f80                red_host
+                0xa00c2fa0                stack
+                0xa00c2fc0                rled
+                0xa00c2fe0                task
+                0xa00c3000                pcb
+ *fill*         0xa00c3004       0x1c 00
+ COMMON         0xa00c3020       0x24 task2_start.o
+                                  0x0 (size before relaxing)
+                0xa00c3020                oled
+                0xa00c3028                led
+                0xa00c3040                orange_host
+                0xa00c3044                . = ALIGN (0x4)
+                0xa00c3044                __bss_start = .
  *(.text)
  *(strings)
-                0xa00c2c24                __bss_end = .
-                0xa00c2c24                . = ALIGN (0x4)
-                0xa00c2c24                _end = .
-                0xa00c2c24                _bss_end__ = .
-                0xa00c2c24                __bss_end__ = .
-                0xa00c2c24                __end__ = .
-                0xa00c2c24                PROVIDE (end, .)
+                0xa00c3044                __bss_end = .
+                0xa00c3044                . = ALIGN (0x4)
+                0xa00c3044                _end = .
+                0xa00c3044                _bss_end__ = .
+                0xa00c3044                __bss_end__ = .
+                0xa00c3044                __end__ = .
+                0xa00c3044                PROVIDE (end, .)
 
 .stab
  *(.stab)

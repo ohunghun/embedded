@@ -187,7 +187,13 @@ unsigned int xLED = 0;
 #define LED_PORT 0x10600000
 
 extern unsigned char led;
- 
+
+unsigned int acc_tick;
+extern int eval_task_num;
+extern char eval_flag;
+extern int PCB_CurrentTask;
+extern unsigned int eval_time;
+
 void eventTickService(void) 
 { 
 	static char task_led;
@@ -200,9 +206,25 @@ void eventTickService(void)
 
 	if((__REG32(INTER_BASE+ICIP) & 0x04000000) != 0)	// pin 26 : OS Timer 0
 	{
+		acc_tick += __REG32(TIMER_BASE+OSCR);	// accumulate
+
 		__REG32(TIMER_BASE+OSCR) = 0;
 		__REG32(TIMER_BASE+OSSR) &= 0;
 		__REG32(TIMER_BASE+OSSR) |= 1;
+
+		if(eval_flag == 1 && PCB_CurrentTask == eval_task_num)
+		{
+			eval_flag = 2;
+			eval_time = acc_tick;
+		}
+		else if(eval_flag == 2 && PCB_CurrentTask == eval_task_num)
+		{
+			eval_flag = 0;
+			eval_time = acc_tick - eval_time;
+			PutString("0x");
+			PutNum(eval_time);
+			PutString("\r\n");
+		}
 
 		/*if(task_led){
 			task_led = 0;

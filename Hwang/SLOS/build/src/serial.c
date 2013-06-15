@@ -193,3 +193,20 @@ void GetString(char* str)
 	*str++ = '\n';
 	*str = '\0';
 }
+
+void PutNum(unsigned int num)
+{
+	char n;
+	int i;
+	
+	for(i = 28; i >= 0; i -= 4)
+	{
+		n = (num >> i) & 0x0000000F;
+		if(n > 9)
+			n += 55;
+		else
+			n += 48;
+
+		PutChar(n);
+	}
+}

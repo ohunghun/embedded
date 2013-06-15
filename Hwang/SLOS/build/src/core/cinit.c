@@ -229,6 +229,11 @@ void disable_irq()
 unsigned int pcb_exist[3];
 unsigned int running_task[4];
 int task_to_pcb[4];
+unsigned int task_priority[4];
+unsigned int task_remainslice[4];
+int eval_task_num;
+char eval_flag;
+unsigned int eval_time;
 
 int C_Entry(void)
 {

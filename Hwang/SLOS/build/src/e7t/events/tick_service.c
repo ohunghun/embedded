@@ -72,6 +72,7 @@
 #include "../headers/macros.h"
 
 #include "../../headers/api_types.h"
+#include "../../scheduler_c.h"
 
 /*****************************************************************************
  * MACRO'S
@@ -186,21 +187,30 @@ unsigned int xLED = 0;
 
 #define LED_PORT 0x10600000
 
+extern int interrupt_mask;
+
+#define DIS_INT	interrupt_mask = __REG32(ICMR);	\
+						__REG32(ICMR) = 0
+#define EN_INT		__REG32(ICMR) = interrupt_mask
+
 extern unsigned char led;
 
 unsigned int acc_tick;
-extern int eval_task_num;
+extern int eval_pid;
 extern char eval_flag;
 extern int PCB_CurrentTask;
 extern unsigned int eval_time;
+extern Pcb* cur_ppcb;
 
 void eventTickService(void) 
 { 
 	static char task_led;
 	volatile int i;
+	static int eval_i;
 
 	/* -- reset timer interrupt... */ ////////////////////////////////////
 	disable_irq();	// IRQ Disable
+	//DIS_INT;
 
 	// pin 26 : OS Timer 0
 
@@ -208,40 +218,31 @@ void eventTickService(void)
 	{
 		acc_tick += __REG32(TIMER_BASE+OSCR);	// accumulate
 
-		__REG32(TIMER_BASE+OSCR) = 0;
+		__REG32(TIMER_BASE+OSMR0) = 0xFFFFFFFF;
 		__REG32(TIMER_BASE+OSSR) &= 0;
 		__REG32(TIMER_BASE+OSSR) |= 1;
 
-		if(eval_flag == 1 && PCB_CurrentTask == eval_task_num)
+		if(eval_flag)
 		{
-			eval_flag = 2;
-			eval_time = acc_tick;
-		}
-		else if(eval_flag == 2 && PCB_CurrentTask == eval_task_num)
-		{
-			eval_flag = 0;
-			eval_time = acc_tick - eval_time;
-			PutString("0x");
-			PutNum(eval_time);
-			PutString("\r\n");
+			if(eval_i > 30)
+			{	
+				eval_i = 0;
+				eval_flag = 0;
+			}
+			else
+			{
+				PutNum(cur_ppcb->pid);
+				PutString(" -> ");
+				eval_i++;
+			}
 		}
 
-		/*if(task_led){
-			task_led = 0;
-			__REG32(LED_PORT) |= 0x000000F0;
-			for(i=0;i<30000;i++);
-			__REG32(LED_PORT) = led;
-		}else{
-			task_led = 1;
-			__REG32(LED_PORT) |= 0x0000000F;
-			for(i=0;i<30000;i++);
-			__REG32(LED_PORT) = led;
-		}*/
+		__REG32(TIMER_BASE+OSCR) = 0;
+		__REG32(TIMER_BASE+OSMR0) = 0x00000800;
 	}
 
-	//PutString("tick service \r\n");
-
 	enable_irq();	// IRQ Enable*/
+	//EN_INT;
 
 
 //*INTPND	= 1<<10;

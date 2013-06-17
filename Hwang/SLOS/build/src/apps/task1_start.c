@@ -83,6 +83,8 @@
 #include "task2_start.h"
 #include "task3_start.h"
 #include "task4_start.h"
+#include "../malloc/malloc.h"
+#include "../scheduler_c.h"
 
 #define GREEN1      0
 #define RED         2
@@ -195,6 +197,13 @@ void switchOffRedLED(void)
 #define	__REG32	*(volatile unsigned long *)
 #define	__REG16	*(volatile unsigned short *)
 #define	__REG8	*(volatile unsigned char *)
+#define ICMR	0x40D00004
+
+extern int interrupt_mask;
+
+#define DIS_INT	interrupt_mask = __REG32(ICMR);	\
+						__REG32(ICMR) = 0
+#define EN_INT		__REG32(ICMR) = interrupt_mask
 
 extern unsigned int pcb_exist[3];
 extern unsigned int running_task[4];
@@ -291,121 +300,105 @@ void startTask(char num, void(*task_addr)(void), char irq)
 		enable_irq();	// enable irq
 }
 
-/*
-extern void* PCB_BottomTask1;
-extern void* PCB_BottomTask2;
-extern void* PCB_BottomTask3;*/
+extern Pcb* cur_ppcb;
 
 void killTask(char num, char irq)
 {	
-	int i;
-	int* pcb;
+	int intmask;
+	int pid;
+	Pcb* ppcb, *pre;
 
+	// Disable interrupt
 	if(irq != 0)
-		disable_irq();	// disable irq
+	{
+		DIS_INT;
+	}
+	
+	// Find target task pcb
+	pid = num - 48;
+	pre = ppcb = cur_ppcb;
+	do{
+		if(ppcb->pid == pid)
+			break;
 
-	num -= 49;
-	if(running_task[num] == 0)
+		pre = ppcb;		
+		ppcb = ppcb->next;
+	}while(ppcb != cur_ppcb);
+	if(ppcb->pid != pid)
+	{
 		PutString("The task is already dead. \r\n");
-	else{
-		running_task[num] = 0;
-
-		///////
-/*
-		switch(task_to_pcb[num])
-		{
-		case 0:
-			pcb = (int*)&PCB_PtrTask1;
-			break;
-		case 1:
-			pcb = (int*)&PCB_PtrTask2;
-			break;
-		case 2:
-			pcb = (int*)&PCB_PtrTask3;
-			break;
-		}
-		for(i = -4; i >= -68; i -=4)
-		{
-			__REG32(pcb + i) = 0;
-		}
-*/
-		///////
-
-		pcb_exist[task_to_pcb[num]] = 0;
-		task_to_pcb[num] = -1;
-
-		PutString("Kill the task ");
-		PutChar(num + 49);
-		PutString(". \r\n");
 	}
 
+	// Adjust link and free the memory.
+	else
+	{
+		pre->next = ppcb->next;
+
+		free(ppcb->task_entry);
+		free(ppcb->stack);
+		free(ppcb);
+	}
+
+	// Enable interrupt
 	if(irq != 0)
-		enable_irq();	// enable irq
+	{
+		EN_INT;
+	}
 }
 
-extern int eval_task_num;
+extern int eval_pid;
 extern char eval_flag;
-void evaluateTask(char num)
+void evaluateTask()
 {	
-	eval_flag = 1;
-	eval_task_num = num - 49;
+	
 }
 
 extern unsigned int task_priority[4];
 void priorityChange(char num, char priority)
 {
-	task_priority[num - 49] = priority - 48;
+	Pcb* ppcb;
+	char pid;
+
+	pid = num - 48;
+	ppcb = cur_ppcb;
+	do{
+		if(ppcb->pid == pid)
+			break;
+		ppcb = ppcb->next;
+	}while(ppcb != cur_ppcb);
+	if(ppcb->pid != pid)
+		return;
+
+	ppcb->priority = priority - 48;
 }
 
 void printTask()
 {
-	int i;
+	Pcb* ppcb;
 
-	for(i = 0; i < 4; i++)
-	{
-		if(running_task[i] == 1)
-		{
-			PutString("task ");
-			PutNum(i+1);
-			PutString(" 's priority is ");
-			PutNum(task_priority[i]);
-			PutString("\r\n");
-		}
-	}
-	/*
-	PutString("pcb1 ");
-	PutNum((int)&PCB_PtrTask1);
-	PutString("\r\n");
-	PutString("pcb2 ");
-	PutNum((int)&PCB_PtrTask2);
-	PutString("\r\n");
-	PutString("pcb3 ");
-	PutNum((int)&PCB_PtrTask3);
-	PutString("\r\n");
-
-	PutString("pcb1 b ");
-	PutNum((int)&PCB_BottomTask1);
-	PutString("\r\n");
-	PutString("pcb2 b ");
-	PutNum((int)&PCB_BottomTask2);
-	PutString("\r\n");
-	PutString("pcb3 b ");
-	PutNum((int)&PCB_BottomTask3);
-	PutString("\r\n");*/
+	ppcb = cur_ppcb;
+	do{
+		PutString("pid : ");
+		PutNum(ppcb->pid);
+		PutString(" 's priority is ");
+		PutNum(ppcb->priority);
+		PutString("\r\n");
+		ppcb = ppcb->next;
+	}while(ppcb != cur_ppcb);
 }
 
-#define DYNAMIC_TASK_ADDR	0xA0100000	// Prepared memory address : 0xA0100000 for new task only. New task size must be smaller than 10000 bytes.
-// 0xA0100000	kernel
-// 0xA2600000	usr
+extern int g_pid;
 void makeTask()
 {
 	unsigned int size;
-	unsigned int addr;
+	void* addr, *addr_tmp;
 	char priority;
+	char c;
+	int intmask;
+	Pcb* ppcb;
 
-	disable_irq();
-
-	killTask('4', 0);
+	// Disable interrupt
+	DIS_INT;
 
 	// Receive the task size.
 	size = GetChar();
@@ -416,21 +409,50 @@ void makeTask()
 	// Receive priority of the task.
 	priority = GetChar();
 
-	// Copy bin file to the prepared memory.
-	addr = DYNAMIC_TASK_ADDR;
+	PutString("p : ");
+	PutNum(priority);
+	PutString(",  size : ");
+	PutNum(size);
+	PutString("\r\n");
+
+	// Copy bin file to the memory.
+	addr = addr_tmp = malloc((int)size);
 	while(size > 0)
 	{
-		__REG8(addr++) = GetChar();
+		c = GetChar();
+		__REG8(addr_tmp++) = c;
 		size--;
 	}
 
-	// Start the task.
-	startTask('4', (void(*)(void))DYNAMIC_TASK_ADDR, 0);
-	priorityChange('4', priority + 48);
+	PutString("copy complete\r\n");
 
-	PutString("task is created.\r");
+	// Create a New PCB. And adjust link
+	ppcb = createPcb(g_pid++);
+	ppcb->next = cur_ppcb->next;
+	cur_ppcb->next = ppcb;
+	ppcb->priority = priority;
+	ppcb->task_entry = addr;
 
-	enable_irq();
+	// Set PCB's registers.
+	task = (void(*)(void))addr;
+	pcb = &(ppcb->reg[18]);
+	stack = malloc(104) + 100;
+	ppcb->stack = stack;
+	__asm__("STMFD r13!, {r0-r3}");
+	__asm__("LDR r0,=task");
+	__asm__("LDR r0,[r0]");
+	__asm__("LDR r1,=pcb");
+	__asm__("LDR r1,[r1]");
+	__asm__("LDR r2,=stack");
+	__asm__("LDR r2,[r2]");
+	__asm__("BL pcbSetUp");
+	__asm__("LDMFD r13!, {r0-r3}");
+
+	PutString("task added.\r\n");
+	for(size = 0; size < 30000; size++);
+
+	// Enable interrupt
+	EN_INT;
 }
 
 char checkCmd(char* str)
@@ -451,7 +473,7 @@ char checkCmd(char* str)
 		killTask(num, 1);
 		break;
 	case 'e':
-		evaluateTask(num);
+		eval_flag = 1;
 		break;
 	case 'p':
 		priorityChange(num, str[3]);

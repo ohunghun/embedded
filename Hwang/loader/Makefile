@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -lpthread
-OUTPUT = hloader
+OUTPUT = loader
 
 $(OUTPUT) : serial.c
 	$(CC) $(CFLAGS) -o $(OUTPUT) $<

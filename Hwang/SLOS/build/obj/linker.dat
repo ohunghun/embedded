@@ -34,7 +34,9 @@ INPUT( start.o
        task2_start.o 
        task3_start.o
        task4_start.o
-		 serial.o)
+		 serial.o
+		 malloc.o
+		 scheduler_c.o)
 
 OUTPUT("slos.elf")
 

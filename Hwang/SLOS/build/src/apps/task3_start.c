@@ -135,12 +135,25 @@ printToHost ("\n\r");
 #define NINE 0x00000067
 
 extern unsigned char led;
-
+#include "../malloc/malloc.h"
 void C_EntryTask3(void) 
 {
-	unsigned int i;
+	volatile unsigned int i;
 	unsigned char seg;
 	unsigned char num;
+	char* a;
+
+	while(1)
+	{
+		a = (char*)malloc(sizeof(char)*4);
+		a[0]='h';
+		a[1]='h';
+		a[2]='h';
+		a[3]='\0';
+		PutString(a);
+		for(i = 0; i < 100000; i++);
+		free(a);
+	}
 
 	num = 0;
 	if(led & 0x80)

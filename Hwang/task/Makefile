@@ -20,9 +20,9 @@ ELF_EXEC2 = task2.elf		# elf file name
 
 all:$(ELF_EXEC) $(ELF_EXEC2)
 	$(OC) $(OCFLAGS) $(ELF_EXEC) $(BIN_IMAGE)	# create bin image from elf file
-	cp ./$(BIN_IMAGE) /root/eslab/term/hloader_c	# copy bin file to tftpboot directoty
+	cp ./$(BIN_IMAGE) /root/eslab/term/loader	# copy bin file to tftpboot directoty
 	$(OC) $(OCFLAGS) $(ELF_EXEC2) $(BIN_IMAGE2)	
-	cp ./$(BIN_IMAGE2) /root/eslab/term/hloader_c	
+	cp ./$(BIN_IMAGE2) /root/eslab/term/loader
 
 $(ELF_EXEC):$(OBJS)
 	$(LD) $(START_LDFLAGS) -o $@ $(OBJS) 

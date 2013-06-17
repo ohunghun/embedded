@@ -42,20 +42,20 @@ int main()
 	unsigned char led;
 	unsigned char led_100, led_10, led_1;
 
-	led = 255;
+	led = 99;
 	while(1)
 	{
-		led--;
-		__REG32(LED_PORT) = led;
+		if(led > 1)
+			led--;
+		else
+			led = 99;
 
-		seg(led_100, led / 100);
 		seg(led_10, (led / 10) % 10);
 		seg(led_1, (led % 100) % 10);
 
-	
-		__REG32(SEV43_port) = led_100;;
-		__REG32(SEV12_port) = led_10 << 8 | led_1;
+		__REG32(SEV43_port) = led_10 << 8 | led_1;
 
 		for(i=0;i<30000;i++);
 	}
 }
+

@@ -189,7 +189,7 @@ void GetString(char* str)
 		c = GetChar();
 		PutChar(c);		// you can see that you have inputted
 		*str++ = c;
-	}while(c != '\r');	// if you push the 'ENTER' key, this routine will finish
+	}while(c != '\r' && c != '\0');	// if you push the 'ENTER' key, this routine will finish
 	*str++ = '\n';
 	*str = '\0';
 }

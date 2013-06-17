@@ -78,6 +78,7 @@
      .extern eventTickService
      .extern eventButtonService
      .extern kernelScheduler
+	  .extern kernelScheduler_c
 
 @ ****************************************************************************
 @ * ROUTINES
@@ -96,7 +97,7 @@ INTPND:
 
 eventsIRQHandler:
      SUB     r14, r14, #4
-     STMFD   r13!, {r0-r3, r12, r14}    @ save context
+     STMFD   r13!, {r0-r3,r12,r14}     @ save context
 @     LDR     r0, INTPND	 
 @     LDR     r0, [r0]                   @ get IRQ source		
 @     TST     r0, #0x0400
@@ -125,6 +126,7 @@ eventButtonVeneer:
 eventTickVeneer:
 
      BL      eventTickService
-     B       kernelScheduler
+    @ B       kernelScheduler
+	  B       kernelScheduler_c
      .end
 

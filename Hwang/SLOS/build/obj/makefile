@@ -39,7 +39,9 @@ task1_start.o \
 task2_start.o \
 task3_start.o \
 task4_start.o \
-serial.o
+serial.o \
+malloc.o \
+scheduler_c.o
 
 all : ${OBJS}
 	${LINKER} -o ../image/slos.elf linker.dat
@@ -149,4 +151,10 @@ task4_start.o : ../src/apps/task4_start.c
 	${CC} ${CFLAGS} -o $@ $<
 
 serial.o : ../src/serial.c
+	${CC} ${CFLAGS} -o $@ $<
+
+malloc.o : ../src/malloc/malloc.c
+	${CC} ${CFLAGS} -o $@ $<
+
+scheduler_c.o : ../src/scheduler_c.c
 	${CC} ${CFLAGS} -o $@ $<

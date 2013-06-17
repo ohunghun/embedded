@@ -75,6 +75,7 @@
 #include "all.h"
 #include "../e7t/events/event_init.h"
 #include "../serial.h"
+#include "../malloc/malloc.h"
 
 /*****************************************************************************
  * MACROS
@@ -193,7 +194,7 @@ void os_timer_init()
 	__REG32(INTER_BASE+ICLR) &= 0xFBFFFFFF;	// IRQ mode
 
 	__REG32(TIMER_BASE+OSCR) = 0;		
-	__REG32(TIMER_BASE+OSMR0) = 0x00005800;	// 1 sec 38400
+	__REG32(TIMER_BASE+OSMR0) = 0x00000800;	// 1 sec 38400
 }
 
 // enable irq
@@ -231,9 +232,13 @@ unsigned int running_task[4];
 int task_to_pcb[4];
 unsigned int task_priority[4];
 unsigned int task_remainslice[4];
-int eval_task_num;
+int eval_pid;
 char eval_flag;
 unsigned int eval_time;
+#include "../scheduler_c.h"
+Pcb* cur_ppcb;
+int g_pid;
+int interrupt_mask;
 
 int C_Entry(void)
 {
@@ -251,14 +256,6 @@ int C_Entry(void)
   * -------------------------------------------------------------------
   */
 
-//lltrace(cinit_init(),CINITINIT);
-SerialInit();
-// 타이머 설정
-
-os_timer_init();
-os_timer_start();
-enable_irq();	
-
 pcb_exist[0] = 1;
 pcb_exist[1] = 0;
 pcb_exist[2] = 0;
@@ -272,6 +269,20 @@ task_to_pcb[0] = 0;
 task_to_pcb[1] = -1;
 task_to_pcb[2] = -1;
 task_to_pcb[3] = -1;
+
+mallocinit();
+
+g_pid = 1;
+cur_ppcb = createPcb(g_pid++);
+cur_ppcb->next = cur_ppcb;
+
+//lltrace(cinit_init(),CINITINIT);
+SerialInit();
+// 타이머 설정
+
+os_timer_init();
+os_timer_start();
+enable_irq();	
 
  /* -------------------------------------------------------------------
   *
